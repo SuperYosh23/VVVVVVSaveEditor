@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>VVVVVV Save Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+  h1, h2 { margin: 0 0 12px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .card { border: 1px solid #9993; border-radius: 10px; padding: 12px; flex: 1; min-width: 280px; }
+  label { display: block; font-weight: 600; margin-top: 10px; }
+  input, select, textarea { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #9995; }
+  textarea { min-height: 140px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  button { padding: 8px 12px; border-radius: 8px; border: 1px solid #9995; cursor: pointer; }
+  .small { font-size: 12px; color: #666; }
+  .muted { color: #666; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  details { margin-top: 8px; }
+  .list { display: grid; gap: 8px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #9991; font-size: 12px; margin-left: 6px;}
+</style>
+</head>
+<body>
+<h1>VVVVVV Save Editor</h1>
+<p class="muted">Upload a .vvv save (XML) to view and edit fields. Then download the updated .vvv or copy the raw XML.</p>
+
+<div class="row">
+  <div class="card">
+    <h2>Load</h2>
+    <label for="fileInput">Save file (.vvv)</label>
+    <input id="fileInput" type="file" accept=".vvv,.xml,text/xml" />
+    <div class="actions">
+      <button id="loadSample">Load sample from textbox below</button>
+      <button id="resetForm">Reset form</button>
+    </div>
+    <details>
+      <summary>What this edits</summary>
+      <div class="list small">
+        <div>Basic stats: time, deaths, flips, summary</div>
+        <div>Position: savex, savey, saverx, savery, savedir</div>
+        <div>Progress flags: trinkets, flags[], collect[], crewstats[], worldmap[]</div>
+        <div>Mode: finalmode, finalstretch, hardestroom & coords</div>
+        <div>Misc: currentsong, companion, supercrewmate, scmprogress, teleportscript</div>
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Raw XML input/output</h2>
+    <label for="rawXml">Raw XML</label>
+    <textarea id="rawXml" placeholder="Paste XML here or see parsed output after uploading"></textarea>
+    <div class="actions">
+      <button id="parseRaw">Parse raw XML</button>
+      <button id="copyRaw">Copy raw XML</button>
+      <button id="downloadVvv">Download .vvv</button>
+    </div>
+    <p class="small">Tip: You can edit the XML directly, then re-parse to sync the form.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Summary</h2>
+  <div class="grid-2">
+    <div>
+      <label for="summary">Summary</label>
+      <input id="summary" type="text" placeholder="e.g. The Ship, 0:04" />
+    </div>
+    <div>
+      <label for="currentsong">Current song</label>
+      <select id="currentsong"></select>
+    </div>
+  </div>
+  <div class="grid-3">
+    <div>
+      <label for="hours">Hours</label>
+      <input id="hours" type="number" min="0" />
+    </div>
+    <div>
+      <label for="minutes">Minutes</label>
+      <input id="minutes" type="number" min="0" max="59" />
+    </div>
+    <div>
+      <label for="seconds">Seconds</label>
+      <input id="seconds" type="number" min="0" max="59" />
+    </div>
+  </div>
+  <div class="grid-3">
+    <div>
+      <label for="frames">Frames</label>
+      <input id="frames" type="number" min="0" />
+    </div>
+    <div>
+      <label for="deathcounts">Deaths</label>
+      <input id="deathcounts" type="number" min="0" />
+    </div>
+    <div>
+      <label for="totalflips">Total flips</label>
+      <input id="totalflips" type="number" min="0" />
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>Location and direction</h2>
+    <div class="grid-2">
+      <div>
+        <label for="savex">Save X</label>
+        <input id="savex" type="number" min="0" />
+      </div>
+      <div>
+        <label for="savey">Save Y</label>
+        <input id="savey" type="number" min="0" />
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label for="saverx">Room X</label>
+        <input id="saverx" type="number" min="0" />
+      </div>
+      <div>
+        <label for="savery">Room Y</label>
+        <input id="savery" type="number" min="0" />
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label for="savedir">Direction</label>
+        <select id="savedir">
+          <option value="0">Left</option>
+          <option value="1">Right</option>
+        </select>
+      </div>
+      <div>
+        <label for="savegc">Save checkpoint index</label>
+        <input id="savegc" type="number" min="0" />
+      </div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <label for="savepoint">Savepoint</label>
+        <input id="savepoint" type="number" min="0" />
+      </div>
+      <div>
+        <label for="teleportscript">Teleport script</label>
+        <input id="teleportscript" type="text" />
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Progress and modes</h2>
+    <div class="grid-3">
+      <div>
+        <label for="trinkets">Trinkets</label>
+        <select id="trinkets"></select>
+      </div>
+      <div>
+        <label for="companion">Companion</label>
+        <select id="companion">
+          <option value="0">None</option>
+          <option value="1">Crewmate following</option>
+        </select>
+      </div>
+      <div>
+        <label for="supercrewmate">Super Crewmate</label>
+        <select id="supercrewmate">
+          <option value="0">Off</option>
+          <option value="1">On</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div>
+        <label for="scmprogress">SCM progress</label>
+        <input id="scmprogress" type="number" min="0" />
+      </div>
+      <div>
+        <label for="finalmode">Final mode</label>
+        <select id="finalmode">
+          <option value="0">Normal</option>
+          <option value="1">Final mode</option>
+        </select>
+      </div>
+      <div>
+        <label for="finalstretch">Final stretch</label>
+        <select id="finalstretch">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+    <label>Hardest room</label>
+    <div class="grid-3">
+      <div>
+        <input id="hardestroom" type="text" placeholder="Room name (e.g., Welcome Aboard)" />
+      </div>
+      <div>
+        <input id="hardestroom_x" type="number" min="0" placeholder="X" />
+      </div>
+      <div>
+        <input id="hardestroom_y" type="number" min="0" placeholder="Y" />
+      </div>
+    </div>
+    <div class="grid-3">
+      <div>
+        <label for="hardestroomdeaths">Deaths in hardest room</label>
+        <input id="hardestroomdeaths" type="number" min="0" />
+      </div>
+      <div>
+        <label for="hardestroom_specialname">Special name</label>
+        <select id="hardestroom_specialname">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+      <div>
+        <label for="hardestroom_finalstretch">Final stretch hardest</label>
+        <select id="hardestroom_finalstretch">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>Arrays</h2>
+    <details>
+      <summary>World map values<span class="pill">int list</span></summary>
+      <textarea id="worldmap" class="mono" placeholder="Comma-separated integers"></textarea>
+    </details>
+    <details>
+      <summary>Flags<span class="pill">int list</span></summary>
+      <textarea id="flags" class="mono" placeholder="Comma-separated integers"></textarea>
+    </details>
+    <details>
+      <summary>Collect (trinket flags)<span class="pill">int list</span></summary>
+      <textarea id="collect" class="mono" placeholder="Comma-separated integers of 0/1"></textarea>
+    </details>
+    <details>
+      <summary>Crew stats<span class="pill">int list</span></summary>
+      <textarea id="crewstats" class="mono" placeholder="Comma-separated integers"></textarea>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>Meta</h2>
+    <div class="grid-2">
+      <div>
+        <label for="lastsaved">Last saved</label>
+        <input id="lastsaved" type="number" min="0" />
+      </div>
+      <div>
+        <label for="showtargets">Show targets</label>
+        <select id="showtargets">
+          <option value="0">No</option>
+          <option value="1">Yes</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Export</h2>
+  <div class="actions">
+    <button id="syncToXml">Sync form to XML</button>
+    <button id="downloadVvv2">Download .vvv</button>
+  </div>
+  <p class="small">“Sync form to XML” updates the Raw XML textbox from the current fields.</p>
+</div>
+
+<script>
+    
+// Auto-sync trinkets dropdown with collect array
+$("trinkets").addEventListener("change", () => {
+  const count = Number($("trinkets").value);
+  // Build array of length 20 (VVVVVV has 20 trinkets)
+  const arr = Array(20).fill(0).map((_, i) => (i < count ? 1 : 0));
+  $("collect").value = arr.join(",");
+  // Also update XML immediately if desired
+  if (dom) {
+    setTagText(dom, "trinkets", String(count));
+    setTagText(dom, "collect", arr.join(","));
+    $("rawXml").value = new XMLSerializer().serializeToString(dom);
+  }
+});
+
+    
+    
+/* --- Utility helpers --- */
+const $ = (id) => document.getElementById(id);
+const getInt = (el) => {
+  const v = el.value.trim();
+  if (v === "") return 0;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+const setSelectRange = (sel, start, end, step=1) => {
+  sel.innerHTML = "";
+  for (let i = start; i <= end; i += step) {
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = String(i);
+    sel.appendChild(opt);
+  }
+};
+const csvToArray = (str) => {
+  if (!str) return [];
+  return str.split(",").map(s => s.trim()).filter(s => s.length).map(v => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  });
+};
+const arrayToCsv = (arr) => (arr || []).join(",");
+
+/* --- Populate dropdowns with sensible ranges --- */
+setSelectRange($("trinkets"), 0, 20); // VVVVVV has 20 trinkets
+setSelectRange($("currentsong"), 0, 20); // general range; adjust if you want exact mapping
+
+/* --- Sample XML (from your provided save) --- */
+const SAMPLE_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<Save>
+  <Data>
+    <worldmap>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,</worldmap>
+    <flags>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,</flags>
+    <crewstats>1,0,0,0,0,0,</crewstats>
+    <collect>0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,</collect>
+    <savex>232</savex>
+    <savey>113</savey>
+    <saverx>104</saverx>
+    <savery>110</savery>
+    <savegc>0</savegc>
+    <savedir>1</savedir>
+    <savepoint>0</savepoint>
+    <trinkets>0</trinkets>
+    <currentsong>5</currentsong>
+    <showtargets>0</showtargets>
+    <teleportscript></teleportscript>
+    <companion>0</companion>
+    <lastsaved>0</lastsaved>
+    <supercrewmate>0</supercrewmate>
+    <scmprogress>0</scmprogress>
+    <frames>7</frames>
+    <seconds>4</seconds>
+    <minutes>0</minutes>
+    <hours>0</hours>
+    <deathcounts>0</deathcounts>
+    <totalflips>0</totalflips>
+    <hardestroom>Welcome Aboard</hardestroom>
+    <hardestroomdeaths>0</hardestroomdeaths>
+    <hardestroom_x>13</hardestroom_x>
+    <hardestroom_y>5</hardestroom_y>
+    <hardestroom_specialname>0</hardestroom_specialname>
+    <hardestroom_finalstretch>0</hardestroom_finalstretch>
+    <finalmode>0</finalmode>
+    <finalstretch>0</finalstretch>
+    <summary>The Ship, 0:04</summary>
+  </Data>
+</Save>`;
+
+/* --- State --- */
+let dom = null;
+
+/* --- Parsing and binding --- */
+function parseXmlString(xmlStr) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlStr, "application/xml");
+  // Basic error detection
+  if (doc.getElementsByTagName("parsererror").length) {
+    throw new Error("XML parse error");
+  }
+  return doc;
+}
+
+function getTagText(doc, name) {
+  const el = doc.querySelector(name);
+  return el ? el.textContent : "";
+}
+function setTagText(doc, name, value) {
+  let el = doc.querySelector(name);
+  if (!el) {
+    // Create tag if missing
+    const parent = doc.querySelector("Data") || doc.documentElement;
+    el = doc.createElement(name);
+    parent.appendChild(el);
+  }
+  el.textContent = value;
+}
+
+function loadIntoForm(doc) {
+  dom = doc;
+  // Arrays
+  $("worldmap").value = getTagText(doc, "worldmap");
+  $("flags").value = getTagText(doc, "flags");
+  $("collect").value = getTagText(doc, "collect");
+  $("crewstats").value = getTagText(doc, "crewstats");
+
+  // Numbers
+  $("savex").value = getTagText(doc, "savex");
+  $("savey").value = getTagText(doc, "savey");
+  $("saverx").value = getTagText(doc, "saverx");
+  $("savery").value = getTagText(doc, "savery");
+  $("savegc").value = getTagText(doc, "savegc");
+  $("savepoint").value = getTagText(doc, "savepoint");
+  $("frames").value = getTagText(doc, "frames");
+  $("seconds").value = getTagText(doc, "seconds");
+  $("minutes").value = getTagText(doc, "minutes");
+  $("hours").value = getTagText(doc, "hours");
+  $("deathcounts").value = getTagText(doc, "deathcounts");
+  $("totalflips").value = getTagText(doc, "totalflips");
+  $("scmprogress").value = getTagText(doc, "scmprogress");
+  $("lastsaved").value = getTagText(doc, "lastsaved");
+  $("hardestroomdeaths").value = getTagText(doc, "hardestroomdeaths");
+  $("hardestroom_x").value = getTagText(doc, "hardestroom_x");
+  $("hardestroom_y").value = getTagText(doc, "hardestroom_y");
+
+  // Selects / text
+  $("savedir").value = getTagText(doc, "savedir") || "0";
+  $("trinkets").value = getTagText(doc, "trinkets") || "0";
+  $("currentsong").value = getTagText(doc, "currentsong") || "0";
+  $("showtargets").value = getTagText(doc, "showtargets") || "0";
+  $("companion").value = getTagText(doc, "companion") || "0";
+  $("supercrewmate").value = getTagText(doc, "supercrewmate") || "0";
+  $("finalmode").value = getTagText(doc, "finalmode") || "0";
+  $("finalstretch").value = getTagText(doc, "finalstretch") || "0";
+  $("hardestroom_specialname").value = getTagText(doc, "hardestroom_specialname") || "0";
+  $("hardestroom_finalstretch").value = getTagText(doc, "hardestroom_finalstretch") || "0";
+
+  $("teleportscript").value = getTagText(doc, "teleportscript");
+  $("summary").value = getTagText(doc, "summary");
+  $("hardestroom").value = getTagText(doc, "hardestroom");
+
+  // Show in raw
+  const serializer = new XMLSerializer();
+  $("rawXml").value = serializer.serializeToString(doc);
+}
+
+function syncFormToDom() {
+  if (!dom) dom = parseXmlString(SAMPLE_XML);
+  // Arrays (sanity: ensure CSV of ints)
+  setTagText(dom, "worldmap", arrayToCsv(csvToArray($("worldmap").value)));
+  setTagText(dom, "flags", arrayToCsv(csvToArray($("flags").value)));
+  setTagText(dom, "collect", arrayToCsv(csvToArray($("collect").value)));
+  setTagText(dom, "crewstats", arrayToCsv(csvToArray($("crewstats").value)));
+
+  // Numbers/selects
+  setTagText(dom, "savex", String(getInt($("savex"))));
+  setTagText(dom, "savey", String(getInt($("savey"))));
+  setTagText(dom, "saverx", String(getInt($("saverx"))));
+  setTagText(dom, "savery", String(getInt($("savery"))));
+  setTagText(dom, "savegc", String(getInt($("savegc"))));
+  setTagText(dom, "savepoint", String(getInt($("savepoint"))));
+  setTagText(dom, "frames", String(getInt($("frames"))));
+  setTagText(dom, "seconds", String(Math.min(59, Math.max(0, getInt($("seconds"))))));
+  setTagText(dom, "minutes", String(Math.min(59, Math.max(0, getInt($("minutes"))))));
+  setTagText(dom, "hours", String(getInt($("hours"))));
+  setTagText(dom, "deathcounts", String(getInt($("deathcounts"))));
+  setTagText(dom, "totalflips", String(getInt($("totalflips"))));
+  setTagText(dom, "scmprogress", String(getInt($("scmprogress"))));
+  setTagText(dom, "lastsaved", String(getInt($("lastsaved"))));
+
+  setTagText(dom, "savedir", $("savedir").value);
+  setTagText(dom, "trinkets", $("trinkets").value);
+  setTagText(dom, "currentsong", $("currentsong").value);
+  setTagText(dom, "showtargets", $("showtargets").value);
+  setTagText(dom, "companion", $("companion").value);
+  setTagText(dom, "supercrewmate", $("supercrewmate").value);
+  setTagText(dom, "finalmode", $("finalmode").value);
+  setTagText(dom, "finalstretch", $("finalstretch").value);
+  setTagText(dom, "hardestroom_specialname", $("hardestroom_specialname").value);
+  setTagText(dom, "hardestroom_finalstretch", $("hardestroom_finalstretch").value);
+
+  setTagText(dom, "teleportscript", $("teleportscript").value);
+  setTagText(dom, "summary", $("summary").value);
+  setTagText(dom, "hardestroom", $("hardestroom").value);
+  setTagText(dom, "hardestroomdeaths", String(getInt($("hardestroomdeaths"))));
+  setTagText(dom, "hardestroom_x", String(getInt($("hardestroom_x"))));
+  setTagText(dom, "hardestroom_y", String(getInt($("hardestroom_y"))));
+
+  const serializer = new XMLSerializer();
+  $("rawXml").value = serializer.serializeToString(dom);
+}
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const text = String(reader.result);
+      $("rawXml").value = text;
+      const doc = parseXmlString(text);
+      loadIntoForm(doc);
+    } catch (err) {
+      alert("Failed to parse .vvv file as XML. Ensure it’s an XML VVVVVV save.");
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseRawXmlFromTextarea() {
+  try {
+    const text = $("rawXml").value;
+    const doc = parseXmlString(text);
+    loadIntoForm(doc);
+  } catch (err) {
+    alert("Raw XML parse failed. Check for well-formed tags.");
+    console.error(err);
+  }
+}
+
+function downloadFile(filename, text) {
+  const blob = new Blob([text], { type: "text/xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* --- Events --- */
+$("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const isVvv = /\.vvv$/i.test(file.name);
+  if (!isVvv) {
+    // Allow anyway, but warn
+    if (!confirm("File does not have .vvv extension. Attempt to parse as XML?")) return;
+  }
+  handleFile(file);
+});
+
+$("loadSample").addEventListener("click", () => {
+  try {
+    $("rawXml").value = SAMPLE_XML;
+    const doc = parseXmlString(SAMPLE_XML);
+    loadIntoForm(doc);
+  } catch (err) {
+    alert("Failed to load sample XML.");
+  }
+});
+
+$("resetForm").addEventListener("click", () => {
+  dom = parseXmlString(SAMPLE_XML);
+  loadIntoForm(dom);
+});
+
+$("parseRaw").addEventListener("click", parseRawXmlFromTextarea);
+$("copyRaw").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText($("rawXml").value);
+    alert("Raw XML copied to clipboard.");
+  } catch {
+    alert("Copy failed. Your browser may restrict clipboard access.");
+  }
+});
+$("downloadVvv").addEventListener("click", () => {
+  // trust the current textarea content
+  downloadFile("save.vvv", $("rawXml").value);
+});
+$("downloadVvv2").addEventListener("click", () => {
+  syncFormToDom();
+  downloadFile("save.vvv", $("rawXml").value);
+});
+$("syncToXml").addEventListener("click", syncFormToDom);
+
+/* Initialize with sample for convenience */
+try {
+  const doc = parseXmlString(SAMPLE_XML);
+  loadIntoForm(doc);
+} catch (e) { /* ignore */ }
+</script>
+</body>
+</html>
