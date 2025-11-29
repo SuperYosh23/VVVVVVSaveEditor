@@ -280,23 +280,6 @@
 </div>
 
 <script>
-    
-// Auto-sync trinkets dropdown with collect array
-$("trinkets").addEventListener("change", () => {
-  const count = Number($("trinkets").value);
-  // Build array of length 20 (VVVVVV has 20 trinkets)
-  const arr = Array(20).fill(0).map((_, i) => (i < count ? 1 : 0));
-  $("collect").value = arr.join(",");
-  // Also update XML immediately if desired
-  if (dom) {
-    setTagText(dom, "trinkets", String(count));
-    setTagText(dom, "collect", arr.join(","));
-    $("rawXml").value = new XMLSerializer().serializeToString(dom);
-  }
-});
-
-    
-    
 /* --- Utility helpers --- */
 const $ = (id) => document.getElementById(id);
 const getInt = (el) => {
@@ -580,9 +563,8 @@ try {
   loadIntoForm(doc);
 } catch (e) { /* ignore */ }
 </script>
-  <footer style="margin-top:40px; font-size:12px; color:#666; text-align:center;">
+    <footer style="margin-top:40px; font-size:12px; color:#666; text-align:center;">
   This project is almost entirely AI-generated. I am not associated with the developer of VVVVVV.
 </footer>
-
 </body>
 </html>
