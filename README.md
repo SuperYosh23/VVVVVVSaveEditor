@@ -1,4 +1,3 @@
-@@ -0,0 +1,41 @@
 # VVVVVV Save Editor
 
 A simple browser‑based save editor for [VVVVVV](https://thelettervsixtim.es/).  
