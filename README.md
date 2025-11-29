@@ -11,7 +11,6 @@ A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save,
 - **Upload:** Load any XML-formatted VVVVVV save file (.vvv).
 - **Parse & display:** Show key stats (time, deaths, flips), location, mode, arrays.
 - **Edit controls:** Friendly inputs for trinkets, position, direction, flags, and more.
-- **Auto-trinket sync:** Changing the trinket count updates the `<collect>` array automatically.
 - **Raw XML editor:** Edit the XML directly, re-parse to sync the UI.
 - **Export options:** Download updated XML as `save.vvv` or copy the raw XML to clipboard.
 
@@ -40,15 +39,11 @@ A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save,
 - **Trinkets vs collect:**
   - **`<trinkets>`** is the numeric count.
   - **`<collect>`** flags which individual trinkets are collected.
-  - The editor auto-syncs these so the game won’t reset your count.
 
 ---
 
 ## Usage details
 
-- **Editing trinkets**
-  - **Change the dropdown:** The first N entries in `<collect>` become `1`, remaining entries are `0`.
-  - **Manual overrides:** You can still edit `<collect>` in the Arrays section; click “Sync Form to XML” to commit.
 - **Editing arrays**
   - **CSV format:** Arrays are comma-separated integers, no spaces required.
   - **Sanity checks:** The editor normalizes values to integers when syncing.
@@ -62,7 +57,7 @@ A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save,
 
 - **Trinket changes don’t show in-game**
   - **Cause:** `<collect>` array did not match `<trinkets>`.
-  - **Fix:** Use the trinket dropdown (auto-sync) or ensure the first N entries of `<collect>` are `1`.
+  - **Fix:** Ensure the first N entries of `<collect>` are `1`.
 - **Parse error**
   - **Cause:** Malformed XML or missing `<Data>` node.
   - **Fix:** Verify tags are closed properly. Use “Load Sample” to compare structure.
