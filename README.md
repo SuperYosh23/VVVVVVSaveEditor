@@ -1,4 +1,7 @@
-# VVVVVV save editor
+# VVVVVV Save Editor
+
+<img width="500" height="500" alt="icon" src="https://github.com/user-attachments/assets/be227027-ea2b-4df5-aa10-d116744b68e1" />
+
 
 A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save, tweak stats and progress, then export as a .vvv or copy the raw XML.
 
