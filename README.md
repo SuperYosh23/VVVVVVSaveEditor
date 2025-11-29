@@ -1,39 +1,104 @@
-# VVVVVV Save Editor
+# VVVVVV save editor
 
-A simple browser‑based save editor for [VVVVVV](https://thelettervsixtim.es/).  
-This tool lets you upload your `.vvv` save file, view and edit stats, and export the modified save back to `.vvv`.
+A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save, tweak stats and progress, then export as a .vvv or copy the raw XML.
 
 ---
 
 ## Features
 
-- **Upload `.vvv` save files** (XML format used by VVVVVV).
-- **View and edit stats**:
-  - Trinkets (auto‑syncs with `<collect>` array).
-  - Death count, flips, time played.
-  - Player position (X/Y, room coordinates, direction).
-  - Progress flags and arrays (`worldmap`, `flags`, `collect`, `crewstats`).
-- **Raw XML editor**: view or paste XML directly.
-- **Export options**:
-  - Download updated save as `.vvv`.
-  - Copy raw XML to clipboard.
+- **Upload:** Load any XML-formatted VVVVVV save file (.vvv).
+- **Parse & display:** Show key stats (time, deaths, flips), location, mode, arrays.
+- **Edit controls:** Friendly inputs for trinkets, position, direction, flags, and more.
+- **Auto-trinket sync:** Changing the trinket count updates the `<collect>` array automatically.
+- **Raw XML editor:** Edit the XML directly, re-parse to sync the UI.
+- **Export options:** Download updated XML as `save.vvv` or copy the raw XML to clipboard.
 
 ---
 
-## Trinket Auto‑Sync
+## Quick start
 
-VVVVVV tracks trinkets in **two places**:
-1. `<trinkets>` — the total count.
-2. `<collect>` — a 20‑element array of 0/1 flags for each trinket.
+1. **Download** the HTML file (e.g., `vvvvvv-save-editor.html`).
+2. **Open** it in your browser (Chrome, Edge, Firefox).
+3. **Upload** your `.vvv` save via the “Upload Save” section.
+4. **Edit** your fields (e.g., trinkets, position, flags).
+5. **Sync** changes using “Sync Form to XML”.
+6. **Export** using “Download .vvv” or “Copy raw XML”.
 
-If only `<trinkets>` is changed, the game resets progress.  
-This editor automatically updates `<collect>` when you change the trinket dropdown:
+> Tip: You can also paste XML into the Raw XML textbox and click “Parse Raw XML” to load it into the form.
 
-- Selecting `N` trinkets sets the first `N` entries in `<collect>` to `1`.
-- The rest remain `0`.
+---
 
-Example for 5 trinkets:
+## File format notes
 
-```xml
-<trinkets>5</trinkets>
-<collect>1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0</collect>
+- **Save structure:** The editor expects the standard XML structure:
+  - **Root:** `<Save><Data>…</Data></Save>`
+  - **Counters:** `hours`, `minutes`, `seconds`, `frames`, `deathcounts`, `totalflips`
+  - **Location:** `savex`, `savey`, `saverx`, `savery`, `savedir`, `savegc`, `savepoint`
+  - **Progress:** `trinkets`, `collect` (array of 0/1), `flags` (array), `crewstats` (array), `worldmap` (array)
+  - **Misc:** `summary`, `currentsong`, `teleportscript`, `companion`, `supercrewmate`, `scmprogress`, `finalmode`, `finalstretch`
+- **Trinkets vs collect:**
+  - **`<trinkets>`** is the numeric count.
+  - **`<collect>`** flags which individual trinkets are collected.
+  - The editor auto-syncs these so the game won’t reset your count.
+
+---
+
+## Usage details
+
+- **Editing trinkets**
+  - **Change the dropdown:** The first N entries in `<collect>` become `1`, remaining entries are `0`.
+  - **Manual overrides:** You can still edit `<collect>` in the Arrays section; click “Sync Form to XML” to commit.
+- **Editing arrays**
+  - **CSV format:** Arrays are comma-separated integers, no spaces required.
+  - **Sanity checks:** The editor normalizes values to integers when syncing.
+- **Raw XML**
+  - **Round-trip safe:** Parse from Raw XML, edit via UI, sync back to Raw XML.
+  - **Download:** Exports with `.vvv` extension and `text/xml` content type.
+
+---
+
+## Troubleshooting
+
+- **Trinket changes don’t show in-game**
+  - **Cause:** `<collect>` array did not match `<trinkets>`.
+  - **Fix:** Use the trinket dropdown (auto-sync) or ensure the first N entries of `<collect>` are `1`.
+- **Parse error**
+  - **Cause:** Malformed XML or missing `<Data>` node.
+  - **Fix:** Verify tags are closed properly. Use “Load Sample” to compare structure.
+- **Clipboard blocked**
+  - **Cause:** Browser permission.
+  - **Fix:** Use “Download .vvv” instead, or grant clipboard permissions.
+
+---
+
+## Limitations
+
+- **Array length validation:** The editor doesn’t enforce exact array lengths for `worldmap`, `flags`, or `crewstats` yet.
+- **Song names:** `currentsong` uses numeric indices; mapping to track names isn’t included yet.
+- **Room references:** No preset room list or coordinate validation at this time.
+
+---
+
+## Development
+
+- **Single-file:** Pure HTML/CSS/JS, no build step.
+- **Parsing:** Uses `DOMParser` and `XMLSerializer`.
+- **Export:** Generates a `Blob` with `text/xml` and downloads as `.vvv`.
+- **Auto-sync hook:** Listens to `change` on the trinket dropdown and updates `<collect>` and `<trinkets>`.
+
+---
+
+## Tips for power users
+
+- **Direct XML edits:** Tweak the Raw XML, then “Parse Raw XML” to reflect changes in the form.
+- **Custom fields:** Missing tags are created on sync, so you can add fields safely.
+- **Versioning:** Keep backups of your original `.vvv` before editing.
+
+---
+
+## Disclaimer
+
+- **Back up your saves:** Always keep a copy of your original `.vvv` file before making changes.
+- **Compatibility:** Tested with standard VVVVVV XML saves; heavily modded formats may need adjustments.
+- **AI generation:** This project is almost entirely AI-generated, including this README.  
+- **No affiliation:** I am not associated with the developer of VVVVVV.
