@@ -148,7 +148,7 @@
 <div id="tutorialPopup">
   <p class="small">This is for the Steam version of VVVVVV on Windows.</p>
   <p>1. Go to your Documents folder</p>
-  <p>2. Open the "VVVVVV" folder</p>
+  <p>2. Open the "VVVVVV" folder, then the "saves" folder.</p>
   <p>3. Find "qsave.vvv". That's your save file.</p>
   <p>4. Upload it to this page to edit it.</p>
   <button onclick="hideTutorial()">OK</button>
@@ -240,7 +240,7 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   syncFormToDom();
   const serializer = new XMLSerializer();
   const xmlStr = serializer.serializeToString(dom);
-  downloadFile("save.vvv", xmlStr);
+  downloadFile("qsave.vvv", xmlStr);
 });
 
 // Tutorial popup functions
