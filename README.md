@@ -20,6 +20,37 @@ This tool lets you upload your `.vvv` save file, view and edit stats, and export
 
 ---
 
+Usage
+Open vvvvvv-save-editor.html in your browser.
+
+Click Upload Save and select your .vvv file.
+
+Edit stats using the form:
+
+Use dropdowns and inputs for trinkets, deaths, flips, etc.
+
+Arrays (worldmap, flags, collect, crewstats) can be edited in textareas.
+
+Click Sync Form to XML to update the raw XML view.
+
+Export:
+
+Download .vvv to save the file.
+
+Or Copy Raw XML and paste into a file manually.
+
+Notes
+The editor runs entirely in your browser — no server required.
+
+Always back up your original save before editing.
+
+VVVVVV expects well‑formed XML; malformed edits may cause the game to reject the save.
+
+Currently, trinkets can be set via dropdown. Future versions may add individual checkboxes for each trinket.
+
+License
+This project is provided as‑is for personal use. VVVVVV is © Terry Cavanagh. This editor is an unofficial fan tool.
+
 ## Trinket Auto‑Sync
 
 VVVVVV tracks trinkets in **two places**:
