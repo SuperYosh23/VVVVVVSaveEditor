@@ -17,12 +17,11 @@ A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save,
 
 ## Quick start
 
-1. **Download** the HTML file (e.g., `vvvvvv-save-editor.html`).
-2. **Open** it in your browser (Chrome, Edge, Firefox).
-3. **Upload** your `.vvv` save via the “Upload Save” section.
-4. **Edit** your fields (e.g., trinkets, position, flags).
-5. **Sync** changes using “Sync Form to XML”.
-6. **Export** using “Download .vvv” or “Copy raw XML”.
+1. **Open** https://superyosh23.github.io/VVVVVVSaveEditor/ in your browser (Chrome, Edge, Firefox).
+2. **Upload** your `.vvv` save via the “Upload Save” section.
+3. **Edit** your fields (e.g., trinkets, position, flags).
+4. **Sync** changes using “Sync Form to XML”.
+5. **Export** using “Download .vvv” or “Copy raw XML”.
 
 > Tip: You can also paste XML into the Raw XML textbox and click “Parse Raw XML” to load it into the form.
 
