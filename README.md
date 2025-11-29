@@ -1,4 +1,5 @@
-<img width="300" height="300" alt="icon" src="https://github.com/user-attachments/assets/be227027-ea2b-4df5-aa10-d116744b68e1" />
+
+<img width="300" height="50" alt="Untitled drawing (2)" src="https://github.com/user-attachments/assets/4d391a81-d724-45fb-a9bc-6a5ff6bc75d8" />
 
 
 A single-file HTML tool to view and edit VVVVVV XML saves (.vvv). Upload a save, tweak stats and progress, then export as a .vvv or copy the raw XML.
